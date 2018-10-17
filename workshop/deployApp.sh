@@ -1,5 +1,21 @@
 #!/bin/bash
 
+# ---- Configure with sqlplus ----
+cd database/wallet
+unzip Wallet*.zip
+cat >sqlnet.ora<< EOL
+WALLET_LOCATION = (SOURCE = (METHOD = file) (METHOD_DATA = (DIRECTORY="${TNS_ADMIN}")))
+SSL_SERVER_DN_MATCH=yes
+EOL
+cd ../../
+sqlplus admin/${DB_PASSWORD}@${USERNAME}db_HIGH @create_schema.sql;
+
+# TODO when aOne repo is out of workshop folder
+# git clone https://github.com/cloudsolutionhubs/aOne-oow.git
+
+cp -r database aOne-oow/database
+
+
 # --------------------- Build aOne container ---------------------
 
 echo "ocir: " $OCIR
@@ -9,7 +25,9 @@ echo "auth token" $AUTHTOKEN
 
 echo "${AUTHTOKEN}" | docker login $OCIR -u $TENANCY/$USERNAME --password-stdin
 
-docker build -t $OCIR/$TENANCY/aone:latest ../aOne/
+# TODO when finished
+
+docker build -t $OCIR/$TENANCY/aone:latest aOne-oow/
 
 
 # --------------------- Deploy aOne image to OCIR ------------
@@ -43,11 +61,11 @@ spec:
         imagePullPolicy: Always
         env:
         - name: username 
-          value: admin
+          value: "admin"
         - name: password
-          value: $DB_PASSWORD
+          value: "${DB_PASSWORD}"
         - name: connectionstring
-          value: oracledb2_high
+          value: "${USERNAME}db_high"
         ports:
         - containerPort: 8080
       imagePullSecrets:
@@ -71,9 +89,8 @@ EOL
 kubectl apply -f k8s-deployment.yaml
 
 
-# # ------------------------ Check for ip address of service ----
+# ------------------------ Check for ip address of service ----
 
-# # TODO add function to call k8s to get the external ip address of the load balancer
 
 while true
 do
