@@ -17,10 +17,9 @@ cd workshop
 docker build -t worker .
 ```
 
-- change to parent directory and start the container
+- Start the container
 ```
-cd ../
-docker run -it -v /var/run/docker.sock:/var/run/docker.sock  -v `pwd`:/root worker /bin/bash
+docker run -it -v /var/run/docker.sock:/var/run/docker.sock  -v `pwd`:/opt/oracle worker /bin/bash
 ```
 
 - setup oci config files
@@ -32,7 +31,7 @@ oci setup config
     - enter tenancyOCID
     - enter region
 
-- copy the public key and paste into the ocir user api key page
+- copy the public key and paste into the user api key page
 ```
 cat ~/.oci/oci_api_key_public.pem
 ```
@@ -43,11 +42,21 @@ source deployInfra.sh
 ```
 
 - enter compartment ocid
-- watch all the resources needed deploy automatically and the web app deployed
+- watch all the resources needed deploy automatically
 
-- Download Wallet
-- change to aOne directory
+- Download Wallet onto host machine to database/wallet folder and unzip the zip file
 ```
-cd
+mv ~/Downloads/Wallet_ocirdb.zip ./database/wallet
+cd ./database/wallet
+```
+
+
+- copy the database folder to aOne
+```
+cp -r database aOne/database
+```
 
 - deploy the app to the cluster
+```
+source deployApp.sh
+```
