@@ -44,16 +44,9 @@ source deployInfra.sh
 - enter compartment ocid
 - watch all the resources needed deploy automatically
 
-- Download Wallet onto host machine to database/wallet folder and unzip the zip file
+- Download Wallet onto host machine to database/wallet folder
 ```
-mv ~/Downloads/Wallet_ocirdb.zip ./database/wallet
-cd ./database/wallet
-```
-
-
-- copy the database folder to aOne
-```
-cp -r database aOne/database
+mv ~/Downloads/Wallet*.zip ./database/wallet
 ```
 
 - deploy the app to the cluster
