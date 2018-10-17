@@ -347,4 +347,7 @@ oci ce cluster create-kubeconfig --cluster-id $oci_ce_cluster --file $(pwd)/kube
 
 export KUBECONFIG=`pwd`/kubeconfig
 
+echo "go to the oci console and download the database wallet"
+echo "you can use the following wallet password: ${DB_PASSWORD}"
+
 
