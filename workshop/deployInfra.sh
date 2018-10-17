@@ -80,7 +80,7 @@ fi
 echo "Username: ${USERNAME}"
 
 
-export DB_PASSWORD="Str0ng@W1nner"
+export DB_PASSWORD="0PenW0rldD3mo"
 
 # check if authtoken was already created
 if [ "${AUTHTOKEN}" == "" ]
@@ -308,7 +308,7 @@ echo "Completed creating OKE Cluster"
 echo "Creating Node Pool"
 if [ "${oci_ce_node_pool}" == "" ]
     then
-    export oci_ce_node_pool=$(oci ce node-pool create --compartment-id "${COMPARTMENTOCID}" --cluster-id $oci_ce_cluster --name "defaultNodePool"  --kubernetes-version "v1.10.3" --node-shape "VM.Standard2.2" --node-image-name "Oracle-Linux-7.5" --subnet-ids "[\"${oci_subnet_workers1}\"]" --quantity-per-subnet 1 --wait-for-state "SUCCEEDED" --query "data.resources[0].identifier" |  sed 's/"//g')
+    export oci_ce_node_pool=$(oci ce node-pool create --compartment-id "${COMPARTMENTOCID}" --cluster-id $oci_ce_cluster --name "defaultNodePool"  --kubernetes-version "v1.10.3" --node-shape "VM.Standard2.1" --node-image-name "Oracle-Linux-7.5" --subnet-ids "[\"${oci_subnet_workers1}\"]" --quantity-per-subnet 1 --wait-for-state "SUCCEEDED" --query "data.resources[0].identifier" |  sed 's/"//g')
 fi
 
 if [ "${oci_ce_node_pool}" == "" ]
