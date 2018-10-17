@@ -381,3 +381,7 @@ begin
 end users_user_id_trigger;
 /
 ALTER TRIGGER "USERS_USER_ID_TRIGGER" ENABLE;
+
+commit;
+
+exit;
