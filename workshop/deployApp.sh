@@ -8,7 +8,7 @@ WALLET_LOCATION = (SOURCE = (METHOD = file) (METHOD_DATA = (DIRECTORY="${TNS_ADM
 SSL_SERVER_DN_MATCH=yes
 EOL
 cd ../../
-sqlplus admin/${DB_PASSWORD}@${USERNAME}db_HIGH @create_schema.sql;
+sqlplus admin/${DB_PASSWORD}@${DBNAME}_HIGH @create_schema.sql;
 
 # TODO when aOne repo is out of workshop folder
 # git clone https://github.com/cloudsolutionhubs/aOne-oow.git
@@ -65,7 +65,7 @@ spec:
         - name: password
           value: "${DB_PASSWORD}"
         - name: connectionstring
-          value: "${USERNAME}db_high"
+          value: "${DBNAME}_high"
         ports:
         - containerPort: 8080
       imagePullSecrets:
