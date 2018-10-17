@@ -4,3 +4,4 @@ kubeconfig
 Dockerfile
 README.md
 start.sh
+database/wallet/**
