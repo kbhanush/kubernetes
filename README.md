@@ -19,7 +19,7 @@ docker build -t worker .
 
 - Start the container
 ```
-docker run -it -v /var/run/docker.sock:/var/run/docker.sock  -v `pwd`:/opt/oracle worker /bin/bash
+docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v `pwd`/database/wallet:/opt/oracle/database/wallet worker /bin/bash
 ```
 
 - setup oci config files
@@ -46,7 +46,7 @@ source deployInfra.sh
 
 - Download Wallet onto host machine to database/wallet folder
 ```
-mv ~/Downloads/Wallet*.zip ./database/wallet
+mv ~/Downloads/Wallet*.zip ./database/wallet/
 ```
 
 - deploy the app to the cluster
