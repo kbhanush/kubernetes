@@ -1,6 +1,7 @@
 #!/bin/bash
 
-export DBNAME="db${RANDOM}"
+export DBNAME="owdb${RANDOM}"
+echo "${DBNAME}" >> dbname.txt
 
 if [ "${OCIDB}" == "" ]
     then

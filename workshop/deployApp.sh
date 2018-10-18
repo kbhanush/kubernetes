@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # ---- Configure with sqlplus ----
+export DBNAME=$(cat dbname.txt)
 cd database/wallet
 unzip Wallet*.zip
 cat >sqlnet.ora<< EOL
@@ -27,12 +28,12 @@ echo "${AUTHTOKEN}" | docker login $OCIR -u $TENANCY/$USERNAME --password-stdin
 
 # TODO when finished
 
-docker build -t $OCIR/$TENANCY/aone:latest aOne-oow/
+docker build -t $OCIR/$TENANCY/$USERNAME/aone:latest aOne-oow/
 
 
 # --------------------- Deploy aOne image to OCIR ------------
 
-docker push $OCIR/$TENANCY/aone:latest
+docker push $OCIR/$TENANCY/$USERNAME/aone:latest
 
 # -------------------- Create k8s secret
 
@@ -57,7 +58,7 @@ spec:
     spec:
       containers:
       - name: app
-        image: $OCIR/$TENANCY/aone:latest
+        image: $OCIR/$TENANCY/$USERNAME/aone:latest
         imagePullPolicy: Always
         env:
         - name: username 
