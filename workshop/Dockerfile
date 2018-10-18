@@ -25,12 +25,12 @@ RUN mkdir -p /opt/oracle/tools/oci
 
 ENV ORACLE_BASE /opt/oracle/lib/instantclient_18_3
 ENV LD_LIBRARY_PATH /usr/lib/oracle/18.3/client64/lib/:$LD_LIBRARY_PATH
-ENV TNS_ADMIN /opt/oracle/app/database/wallet/
+ENV TNS_ADMIN /opt/oracle/database/wallet/
 ENV ORACLE_HOME /opt/oracle/lib/instantclient_18_3
 ENV PATH $PATH:/usr/lib/oracle/18.3/client64/bin:/opt/oracle/lib/sqlcl/bin
 
 # setup kubectl and oci-cli
-WORKDIR /opt/oracle/app
+WORKDIR /opt/oracle
 
 RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && \
     chmod +x ./kubectl && \
