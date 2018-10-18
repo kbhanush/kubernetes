@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export DBNAME="${USERNAME}db${RANDOM}"
+export DBNAME="db${RANDOM}"
 
 if [ "${OCIDB}" == "" ]
     then
