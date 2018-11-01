@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aone-deployment
+spec:
+  selector:
+    matchLabels: 
+      app: aone
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: aone
+    spec:
+      containers:
+      - name: app
+        image: phx.ocir.io/ocidbpm1/oowuser1/aone:latest
+        imagePullPolicy: Always
+        env:
+        - name: username 
+          value: "admin"
+        - name: password
+          value: "OpenW0rldD3mo"
+        - name: connectionstring
+          value: "db9249_high"
+        ports:
+        - containerPort: 8080
+      imagePullSecrets:
+        - name: ocirsecret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aone-service
+spec:
+  type: LoadBalancer
+  ports:
+  - name: app-port
+    port: 80
+    targetPort: 8080
+  selector:
+    app: aone
