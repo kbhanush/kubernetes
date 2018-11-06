@@ -15,10 +15,12 @@ ENV SQLPLUS oracle-instantclient18.3-sqlplus-18.3.0.0.0-1.x86_64.rpm
 ENV INSTANT_CLIENT oracle-instantclient18.3-basic-18.3.0.0.0-1.x86_64.rpm
 
 WORKDIR /opt/oracle/lib
-ADD ${INSTANT_CLIENT} ${SQLPLUS} ./
-RUN rpm -ivh ./${INSTANT_CLIENT} && \
-   rpm -ivh ./${SQLPLUS} && \
-   rm ${INSTANT_CLIENT} ${SQLPLUS}
+# require instant client in database/downloads folder
+ADD database/downloads/${INSTANT_CLIENT} database/downloads/${SQLPLUS} /opt/oracle/
+RUN rpm -ivh /opt/oracle/${INSTANT_CLIENT} && \
+    rpm -ivh /opt/oracle/${SQLPLUS} && \
+    rm /opt/oracle/${INSTANT_CLIENT} /opt/oracle/${SQLPLUS}
+
 
 
 RUN mkdir -p /opt/oracle/tools/oci
@@ -43,5 +45,7 @@ RUN curl -LO https://download.docker.com/linux/centos/7/x86_64/stable/Packages/d
     rm -rf /var/cache/yum
 
 
-ADD create_schema.sql delete.sh deployApp.sh deployInfra.sh deployOracleDB.sh ./
-ADD aOne-oow aOne-oow
+ADD create_schema.sql delete.sh deployApp.sh deployInfra.sh deployOracleDB.sh /opt/oracle/
+ADD aOne-oow /opt/oracle/aOne-oow
+# copy instant client to aOne folder
+ADD database/downloads/${INSTANT_CLIENT} /opt/oracle/aOne-oow/
