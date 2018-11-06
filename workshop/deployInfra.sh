@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# TODO define all hard paths
+
 # ----------- Collect OCID values from $HOME/.oci/config ----------------
 
 export TENANCYOCID=$(cat $HOME/.oci/config | grep tenancy= | sed -e 's/tenancy=//')
@@ -62,7 +64,7 @@ TENANCY=$(oci iam compartment get --compartment-id "${TENANCYOCID}" --query "dat
 # check if tenancyOCID was properly configured
 if [ "${TENANCY}" == "" ]
 then
-  echo "need to complete ~/.oci/config file"
+  echo "need to complete /root/.oci/config file"
   /bin/bash 
   exit
 fi
@@ -73,14 +75,13 @@ USERNAME=$(oci iam user get --user-id "${USEROCID}" --query "data.name" |  sed '
 # check if username was properly configured
 if [ "${USERNAME}" == "" ]
 then
-  echo "need to complete ~/.oci/config file"
+  echo "need to complete /root/.oci/config file"
   /bin/bash
   exit 
 fi
 echo "Username: ${USERNAME}"
 
 
-export DB_PASSWORD="0PenW0rldD3mo"
 
 # check if authtoken was already created
 if [ "${AUTHTOKEN}" == "" ]
@@ -91,7 +92,7 @@ fi
 # if authtoken is empty then there was an error
 if [ "${AUTHTOKEN}" == "" ]
 then
-  echo "need to complete ~/.oci/config file"
+  echo "need to complete /root/.oci/config file"
   /bin/bash
   exit 
 fi
@@ -104,7 +105,7 @@ echo "auth token: ${AUTHTOKEN}"
 
 echo "Creating Oracle Autonomous Database"
 
-source deployOracleDB.sh &
+source /opt/oracle/deployOracleDB.sh &
 
 
 # -------------- OCIR Networking Prereqs -----------
@@ -289,7 +290,7 @@ echo "Creating OKE Cluster"
 
 if [ "${oci_ce_cluster}" == "" ]
     then
-    export oci_ce_cluster=$(oci ce cluster create --compartment-id "${COMPARTMENTOCID}" --name "oow2018Cluster" --vcn-id $oci_vcn_ocid --kubernetes-version "v1.10.3" --wait-for-state "SUCCEEDED" --service-lb-subnet-ids "[\"${oci_subnet_loadbalancer1}\", \"${oci_subnet_loadbalancer2}\"]" --pods-cidr "10.244.0.0/16" --services-cidr "10.96.0.0/16" --query "data.resources[0].identifier" |  sed 's/"//g')
+    export oci_ce_cluster=$(oci ce cluster create --compartment-id "${COMPARTMENTOCID}" --name "oow2018Cluster" --vcn-id "${oci_vcn_ocid}" --kubernetes-version "v1.10.3" --wait-for-state "SUCCEEDED" --service-lb-subnet-ids "[\"${oci_subnet_loadbalancer1}\", \"${oci_subnet_loadbalancer2}\"]" --pods-cidr "10.244.0.0/16" --services-cidr "10.96.0.0/16" --query "data.resources[0].identifier" |  sed 's/"//g')
 fi 
 
 
@@ -343,11 +344,102 @@ done
 
 # --- Configure kubectl ---
 
-oci ce cluster create-kubeconfig --cluster-id $oci_ce_cluster --file $(pwd)/kubeconfig
+oci ce cluster create-kubeconfig --cluster-id $oci_ce_cluster --file /opt/oracle/kubeconfig
 
-export KUBECONFIG=`pwd`/kubeconfig
+export KUBECONFIG=/opt/oracle/kubeconfig
 
-echo "go to the oci console and download the database wallet and copy to database/wallet"
-echo "you can use the following wallet password: ${DB_PASSWORD}"
+# --------------------- Build aOne container ---------------------
+
+echo "ocir: " $OCIR
+echo "tenancy name: " $TENANCY
+echo "user name: " $USERNAME
+echo "auth token" $AUTHTOKEN
+
+echo "${AUTHTOKEN}" | docker login $OCIR -u $TENANCY/$USERNAME --password-stdin
+
+# TODO when finished
+
+docker build -t $OCIR/$TENANCY/$USERNAME/aone:latest /opt/oracle/aOne-oow/
+
+
+# --------------------- Deploy aOne image to OCIR ------------
+
+docker push $OCIR/$TENANCY/$USERNAME/aone:latest
+
+# -------------------- Create k8s secret
+
+kubectl create secret docker-registry ocirsecret --docker-server=$OCIR --docker-username="${TENANCY}/${USERNAME}" --docker-password="${AUTHTOKEN}" --docker-email="a@a.com"
+
+# -------------------- Create k8s deployment and services file -----
+
+export DBNAME=$(cat /opt/oracle/database/dbname.txt)
+
+export DB_PASSWORD="0PenW0rldD3mo"
+
+cat > /opt/oracle/k8s-deployment.yaml << EOL
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aone-deployment
+spec:
+  selector:
+    matchLabels: 
+      app: aone
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: aone
+    spec:
+      containers:
+      - name: app
+        image: $OCIR/$TENANCY/$USERNAME/aone:latest
+        imagePullPolicy: Always
+        env:
+        - name: username 
+          value: "admin"
+        - name: password
+          value: "${DB_PASSWORD}"
+        - name: connectionstring
+          value: "${DBNAME}_high"
+        ports:
+        - containerPort: 8080
+      imagePullSecrets:
+        - name: ocirsecret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aone-service
+spec:
+  type: LoadBalancer
+  ports:
+  - name: app-port
+    port: 8080
+    targetPort: 8080
+  selector:
+    app: aone
+EOL
+
+# ------------------------- Deploy app ----------------------
+kubectl apply -f /opt/oracle/k8s-deployment.yaml
+
+
+# ------------------------ Check for ip address of service ----
+
+
+while true
+do
+    RESULT=$(kubectl get service aone-service -o=jsonpath="{.status.loadBalancer.ingress[0].ip}")
+    if [ "" != "${RESULT}" ]
+        then 
+            echo "Your app is up and running at http://${RESULT}:8080"
+            break
+    else
+        echo "waiting for service to come up"
+        sleep 5
+    fi
+done
+
 
 
