@@ -2,3 +2,4 @@ workshopSetup
 **/kubeconfig
 **/database/**
 **/workshopTest/**
+k8s-deployment.yaml
