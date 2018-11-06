@@ -19,7 +19,7 @@ RUN echo "Installing EPEL, python-pip, unzip, libaio, oci_cli, requests, cx_Orac
 ENV INSTANT_CLIENT oracle-instantclient18.3-basic-18.3.0.0.0-1.x86_64.rpm
 
 WORKDIR /opt/oracle/lib
-ADD ${INSTANT_CLIENT}  ./
+ADD database/downloads/${INSTANT_CLIENT}  ./
 RUN echo "Installing instant client........" && \
    rpm -ivh ${INSTANT_CLIENT} && \
    rm ${INSTANT_CLIENT} && \
